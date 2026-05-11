@@ -1,179 +1,214 @@
-import React, { useState } from 'react';
-import { Lock, Key, ChevronRight, ArrowLeft, Compass, Map, Globe } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>베게너의 발자취를 찾아서 - 힌트 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 120s linear infinite;
+        }
+        .hint-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .break-keep { word-break: keep-all; }
+    </style>
+</head>
+<body class="bg-stone-950 text-stone-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
 
-// 방탈출 힌트 데이터 사전
-const HINT_DATA = {
-  "A111": {
-    title: "첫 번째 단서: 편지의 비밀",
-    hints: [
-      "편지를 읽으면 마지막 즈음에 베게너의 이름에 잊지 말아야 할 것이 있다고 한다. 베게너 아래에 무엇을 잊지 말아야 하는 것인지 편지를 잘 살펴보자.",
-      "편지에 적혀있는 '베게너' 글자 아래를 순서대로 읽어보자.",
-      "편지에 적혀있는 베게너 글자 아래를 순서대로 읽으면 '암호는 선생님의 이름' 이 나온다. 이제 정답을 가서 말해보자!"
-    ]
-  },
-  "B231": {
-    title: "두 번째 단서: 대륙과 숫자의 비밀",
-    hints: [
-      "ⓐ, ⓑ, ⓒ, ⓓ는 각각 대륙과 해양의 이름을 뜻하는 것 같다. 그럼 각 기호의 옆 숫자는 무엇을 의미하는 걸까?",
-      "ⓐ, ⓑ, ⓒ, ⓓ의 이름을 떠올려 보니 숫자는 모두 이름의 몇번째 글자인지를 얘기하는 듯 하다. <ⓐ, 2>는 대서양의 두 번째 글자를 의미한다고 할 수 있다. 그럼 이제 암호를 연결해보자.",
-      "암호를 연결하면, 태양이 북쪽에 있을 때의 시간이 곧 암호이다. 태양이 남쪽에 있을 때가 우리가 말하는 정오이다. 그렇다면, 북쪽은..?"
-    ]
-  },
-  "D377": {
-    title: "세 번째 단서: 흩어진 지도의 흔적",
-    hints: [
-      "지도에 표시된 흔적들은 마치 퍼즐 조각과 같은 역할을 할 것이다.",
-      "적어도 지도를 가위로 자르는 노력은 해야지 글씨를 알 수 있지 않을까?",
-      "가위로 잘라 붙여보니 '에이지'라는 글자가 보인다. 그럼 암호는 고덕중학교의 에이지..?"
-    ]
-  }
-};
-
-export default function App() {
-  const [inputCode, setInputCode] = useState('');
-  const [activePuzzle, setActivePuzzle] = useState(null);
-  const [hintLevel, setHintLevel] = useState(0); 
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleCheckCode = (e) => {
-    e.preventDefault();
-    const code = inputCode.trim().toUpperCase();
-    
-    if (HINT_DATA[code]) {
-      setActivePuzzle(HINT_DATA[code]);
-      setHintLevel(0);
-      setErrorMessage('');
-    } else {
-      setErrorMessage('올바르지 않은 단서 코드입니다.');
-    }
-  };
-
-  const showNextHint = () => {
-    if (hintLevel < activePuzzle.hints.length) {
-      setHintLevel(hintLevel + 1);
-    }
-  };
-
-  const handleReset = () => {
-    setActivePuzzle(null);
-    setInputCode('');
-    setHintLevel(0);
-    setErrorMessage('');
-  };
-
-  return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col items-center justify-center p-4 font-sans relative overflow-hidden">
-      {/* 배경 애니메이션 (지구본 회전) */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center opacity-[0.04] pointer-events-none overflow-hidden">
-        <Globe className="w-[150vw] h-[150vw] max-w-[1000px] max-h-[1000px] text-amber-500 animate-[spin_120s_linear_infinite]" />
-      </div>
-
-      <div className="max-w-md w-full bg-stone-800/85 backdrop-blur-md rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.6)] overflow-hidden border border-stone-700 relative z-10">
-        
-        {/* 헤더 부분 */}
-        <div className="bg-stone-900/90 p-8 text-center border-b border-stone-700 relative overflow-hidden">
-          <Map className="absolute -right-2 -top-2 w-24 h-24 text-stone-700/40 -rotate-12" />
-          
-          <h1 className="text-xl sm:text-2xl font-extrabold flex items-center justify-center gap-2 text-amber-500 relative z-10 tracking-tighter drop-shadow-md whitespace-nowrap">
-            <Compass className="w-6 h-6 text-amber-400 flex-shrink-0" />
-            베게너의 발자취를 찾아서
-          </h1>
-        </div>
-
-        {/* 메인 컨텐츠 영역 */}
-        <div className="p-6">
-          {!activePuzzle ? (
-            // 1. 코드 입력 화면
-            <form onSubmit={handleCheckCode} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-400 ml-1">발견한 단서 코드 입력</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-stone-500" />
-                  </div>
-                  <input
-                    type="text"
-                    value={inputCode}
-                    onChange={(e) => setInputCode(e.target.value)}
-                    placeholder=""
-                    className="w-full pl-10 pr-4 py-3 bg-stone-900/60 border border-stone-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-lg uppercase text-amber-50 shadow-inner"
-                    maxLength={10}
-                  />
-                </div>
-                {errorMessage && (
-                  <p className="text-red-400 text-sm mt-2 ml-1 animate-pulse">{errorMessage}</p>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-900/20 active:scale-[0.98]"
-              >
-                단서 확인하기
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </form>
-          ) : (
-            // 2. 힌트 제공 화면
-            <div className="space-y-6 animate-in fade-in zoom-in duration-300">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-bold text-amber-400 drop-shadow-sm">{activePuzzle.title}</h2>
-                <p className="text-stone-400 text-sm mt-1">탐험에 도움이 필요하신가요?</p>
-              </div>
-
-              <div className="space-y-4">
-                {activePuzzle.hints.map((hint, index) => {
-                  const isVisible = index < hintLevel;
-                  return (
-                    <div 
-                      key={index} 
-                      className={`p-4 rounded-xl border transition-all duration-500 ${
-                        isVisible 
-                          ? 'bg-stone-700/50 border-amber-500/50 opacity-100 shadow-inner' 
-                          : 'bg-stone-800/50 border-stone-700 opacity-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lock className={`w-4 h-4 ${isVisible ? 'text-amber-400' : 'text-stone-500'}`} />
-                        <span className={`font-semibold ${isVisible ? 'text-amber-400' : 'text-stone-500'}`}>
-                          {index + 1}단계 단서
-                        </span>
-                      </div>
-                      {isVisible ? (
-                        <p className="text-stone-100 leading-relaxed text-sm md:text-base break-keep">
-                          {hint}
-                        </p>
-                      ) : (
-                        <p className="text-stone-500 text-sm italic">
-                          아직 잠겨있습니다.
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="pt-4 flex flex-col gap-3">
-                {hintLevel < activePuzzle.hints.length && (
-                  <button
-                    onClick={showNextHint}
-                    className="w-full bg-stone-700 hover:bg-stone-600 border border-stone-500 text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
-                  >
-                    {hintLevel === 0 ? '첫 번째 단서 보기' : `${hintLevel + 1}단계 단서 열기`}
-                  </button>
-                )}
-                
-                <button
-                  onClick={handleReset}
-                  className="w-full bg-transparent hover:bg-stone-800 text-stone-400 font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  다른 코드 입력하기
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <!-- 배경 애니메이션 -->
+    <div class="absolute inset-0 z-0 flex items-center justify-center opacity-[0.04] pointer-events-none overflow-hidden">
+        <i data-lucide="globe" class="w-[150vw] h-[150vw] max-w-[1000px] max-h-[1000px] text-amber-500 animate-spin-slow"></i>
     </div>
-  );
-}
+
+    <!-- 메인 카드 -->
+    <div id="app-container" class="max-w-md w-full bg-stone-800/85 backdrop-blur-md rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.6)] overflow-hidden border border-stone-700 relative z-10">
+        
+        <!-- 헤더 -->
+        <div class="bg-stone-900/90 p-8 text-center border-b border-stone-700 relative overflow-hidden">
+            <i data-lucide="map" class="absolute -right-2 -top-2 w-24 h-24 text-stone-700/40 -rotate-12"></i>
+            <h1 class="text-xl sm:text-2xl font-extrabold flex items-center justify-center gap-2 text-amber-500 relative z-10 tracking-tighter drop-shadow-md whitespace-nowrap">
+                <i data-lucide="compass" class="w-6 h-6 text-amber-400"></i>
+                베게너의 발자취를 찾아서
+            </h1>
+        </div>
+
+        <!-- 컨텐츠 영역 -->
+        <div id="main-content" class="p-6">
+            <!-- 초기 입력 화면 (기본 표시) -->
+            <div id="input-view" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-medium text-stone-400 ml-1">발견한 단서 코드 입력</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="key" class="h-5 w-5 text-stone-500"></i>
+                        </div>
+                        <input
+                            type="text"
+                            id="hint-input"
+                            class="w-full pl-10 pr-4 py-3 bg-stone-900/60 border border-stone-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-lg uppercase text-amber-50 shadow-inner"
+                            maxlength="10"
+                        >
+                    </div>
+                    <p id="error-message" class="text-red-400 text-sm mt-2 ml-1 hidden animate-pulse">올바르지 않은 단서 코드입니다.</p>
+                </div>
+                <button
+                    onclick="handleCheckCode()"
+                    class="w-full bg-amber-600 hover:bg-amber-500 text-stone-950 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-900/20 active:scale-[0.98]"
+                >
+                    단서 확인하기
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- 힌트 상세 화면 (초기 숨김) -->
+            <div id="hint-view" class="hidden space-y-6 animate-in fade-in zoom-in duration-300">
+                <div class="text-center mb-6">
+                    <h2 id="puzzle-title" class="text-xl font-bold text-amber-400 drop-shadow-sm"></h2>
+                    <p class="text-stone-400 text-sm mt-1">탐험에 도움이 필요하신가요?</p>
+                </div>
+
+                <div id="hints-list" class="space-y-4">
+                    <!-- 힌트 아이템들이 동적으로 추가됩니다 -->
+                </div>
+
+                <div class="pt-4 flex flex-col gap-3">
+                    <button
+                        id="next-hint-btn"
+                        onclick="showNextHint()"
+                        class="w-full bg-stone-700 hover:bg-stone-600 border border-stone-500 text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
+                    >
+                        단서 보기
+                    </button>
+                    
+                    <button
+                        onclick="handleReset()"
+                        class="w-full bg-transparent hover:bg-stone-800 text-stone-400 font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
+                    >
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        다른 코드 입력하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 힌트 데이터
+        const HINT_DATA = {
+            "A111": {
+                title: "첫 번째 단서: 편지의 비밀",
+                hints: [
+                    "편지를 읽으면 마지막 즈음에 베게너의 이름에 잊지 말아야 할 것이 있다고 한다. 베게너 아래에 무엇을 잊지 말아야 하는 것인지 편지를 잘 살펴보자.",
+                    "편지에 적혀있는 '베게너' 글자 아래를 순서대로 읽어보자.",
+                    "편지에 적혀있는 베게너 글자 아래를 순서대로 읽으면 '암호는 선생님의 이름' 이 나온다. 이제 정답을 가서 말해보자!"
+                ]
+            },
+            "B231": {
+                title: "두 번째 단서: 대륙과 숫자의 비밀",
+                hints: [
+                    "ⓐ, ⓑ, ⓒ, ⓓ는 각각 대륙과 해양의 이름을 뜻하는 것 같다. 그럼 각 기호의 옆 숫자는 무엇을 의미하는 걸까?",
+                    "ⓐ, ⓑ, ⓒ, ⓓ의 이름을 떠올려 보니 숫자는 모두 이름의 몇번째 글자인지를 얘기하는 듯 하다. <ⓐ, 2>는 대서양의 두 번째 글자를 의미한다고 할 수 있다. 그럼 이제 암호를 연결해보자.",
+                    "암호를 연결하면, 태양이 북쪽에 있을 때의 시간이 곧 암호이다. 태양이 남쪽에 있을 때가 우리가 말하는 정오이다. 그렇다면, 북쪽은..?"
+                ]
+            },
+            "D377": {
+                title: "세 번째 단서: 흩어진 지도의 흔적",
+                hints: [
+                    "지도에 표시된 흔적들은 마치 퍼즐 조각과 같은 역할을 할 것이다.",
+                    "적어도 지도를 가위로 자르는 노력은 해야지 글씨를 알 수 있지 않을까?",
+                    "가위로 잘라 붙여보니 '에이지'라는 글자가 보인다. 그럼 암호는 고덕중학교의 에이지..?"
+                ]
+            }
+        };
+
+        let currentPuzzle = null;
+        let currentHintLevel = 0;
+
+        // 아이콘 초기화
+        lucide.createIcons();
+
+        // 코드 확인 함수
+        function handleCheckCode() {
+            const input = document.getElementById('hint-input').value.trim().toUpperCase();
+            const errorMsg = document.getElementById('error-message');
+            
+            if (HINT_DATA[input]) {
+                currentPuzzle = HINT_DATA[input];
+                currentHintLevel = 0;
+                errorMsg.classList.add('hidden');
+                renderPuzzle();
+                
+                document.getElementById('input-view').classList.add('hidden');
+                document.getElementById('hint-view').classList.remove('hidden');
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // 힌트 화면 렌더링
+        function renderPuzzle() {
+            document.getElementById('puzzle-title').innerText = currentPuzzle.title;
+            const hintsList = document.getElementById('hints-list');
+            hintsList.innerHTML = '';
+
+            currentPuzzle.hints.forEach((hint, index) => {
+                const isVisible = index < currentHintLevel;
+                const div = document.createElement('div');
+                div.className = `hint-card p-4 rounded-xl border ${isVisible ? 'bg-stone-700/50 border-amber-500/50 opacity-100 shadow-inner' : 'bg-stone-800/50 border-stone-700 opacity-50'}`;
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="${isVisible ? 'lock-open' : 'lock'}" class="w-4 h-4 ${isVisible ? 'text-amber-400' : 'text-stone-500'}"></i>
+                        <span class="font-semibold ${isVisible ? 'text-amber-400' : 'text-stone-500'}">${index + 1}단계 단서</span>
+                    </div>
+                    <p class="text-stone-100 leading-relaxed text-sm md:text-base break-keep ${isVisible ? '' : 'text-stone-500 italic'}">
+                        ${isVisible ? hint : '아직 잠겨있습니다.'}
+                    </p>
+                `;
+                hintsList.appendChild(div);
+            });
+
+            const nextBtn = document.getElementById('next-hint-btn');
+            if (currentHintLevel >= currentPuzzle.hints.length) {
+                nextBtn.classList.add('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                nextBtn.innerText = currentHintLevel === 0 ? '첫 번째 단서 보기' : `${currentHintLevel + 1}단계 단서 열기`;
+            }
+
+            lucide.createIcons();
+        }
+
+        // 다음 힌트 보기
+        function showNextHint() {
+            if (currentHintLevel < currentPuzzle.hints.length) {
+                currentHintLevel++;
+                renderPuzzle();
+            }
+        }
+
+        // 리셋
+        function handleReset() {
+            currentPuzzle = null;
+            currentHintLevel = 0;
+            document.getElementById('hint-input').value = '';
+            document.getElementById('input-view').classList.remove('hidden');
+            document.getElementById('hint-view').classList.add('hidden');
+        }
+
+        // 엔터키 지원
+        document.getElementById('hint-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleCheckCode();
+            }
+        });
+    </script>
+</body>
+</html>
